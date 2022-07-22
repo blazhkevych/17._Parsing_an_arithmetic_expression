@@ -1,145 +1,86 @@
 ﻿#include <cstring>
 #include <iostream>
-//#include <string>
 #include "Parser.h"
+using std::cout;
+using std::endl;
 
-#include <string>
-using namespace std;
-
-void Parser::DeterminationOfPriority(string nextSymbol) //в ифе не верные условия, проверить все.
+void Parser::DeterminationOfPriority(char nextSymbol)
 {
-	/*struct priority_1
-	{
-		char plus {'+'};
-		int priority{ 1 };
-	};*/
-
-	/*
-	 (5.0+2.0^3.0-(4.0-(2.0+3.0)*2.0)-1.0)
-	*/
-	string inStack = m_symbolStack.Get(); // символ из вершины стека символов
+	const char inStack = m_symbolStack.Get(); // Символ из вершины стека символов.
 	if (
-		inStack == nextSymbol || // такая же операция
+		inStack == nextSymbol || // Такая же операция.
 
-		strchr(inStack.c_str(), '*') != nullptr && strchr(nextSymbol.c_str(), '+') != nullptr ||
-		strchr(inStack.c_str(), '*') != nullptr && strchr(nextSymbol.c_str(), '-') != nullptr ||
-		strchr(inStack.c_str(), '/') != nullptr && strchr(nextSymbol.c_str(), '+') != nullptr ||
-		strchr(inStack.c_str(), '/') != nullptr && strchr(nextSymbol.c_str(), '-') != nullptr ||
-		strchr(inStack.c_str(), '^') != nullptr && strchr(nextSymbol.c_str(), '+') != nullptr ||
-		strchr(inStack.c_str(), '^') != nullptr && strchr(nextSymbol.c_str(), '-') != nullptr ||
+		inStack == '*' && nextSymbol == '+' || inStack == '*' && nextSymbol == '-' || // Операции меньшего приоритета нельзя ложить на операции большего приоритета.
+		inStack == '/' && nextSymbol == '+' || inStack == '/' && nextSymbol == '-' ||
+		inStack == '^' && nextSymbol == '+' || inStack == '^' && nextSymbol == '-' ||
 
-		strchr(inStack.c_str(), '+') != nullptr && strchr(nextSymbol.c_str(), '-') != nullptr ||
-		strchr(inStack.c_str(), '-') != nullptr && strchr(nextSymbol.c_str(), '+') != nullptr ||
+		inStack == '+' && nextSymbol == '-' || inStack == '-' && nextSymbol == '+' || // Операции одинакого приоритета нельзя ложить друг на друга (+, -).
 
-		strchr(inStack.c_str(), '*') != nullptr && strchr(nextSymbol.c_str(), '/') != nullptr ||
-		strchr(inStack.c_str(), '*') != nullptr && strchr(nextSymbol.c_str(), '^') != nullptr ||
-		strchr(inStack.c_str(), '/') != nullptr && strchr(nextSymbol.c_str(), '*') != nullptr ||
-		strchr(inStack.c_str(), '/') != nullptr && strchr(nextSymbol.c_str(), '^') != nullptr ||
-		strchr(inStack.c_str(), '^') != nullptr && strchr(nextSymbol.c_str(), '/') != nullptr ||
-		strchr(inStack.c_str(), '^') != nullptr && strchr(nextSymbol.c_str(), '*') != nullptr
+		inStack == '*' && nextSymbol == '/' || inStack == '*' && nextSymbol == '^' || // Операции одинакого приоритета нельзя ложить друг на друга (/, *, ^).
+		inStack == '/' && nextSymbol == '*' || inStack == '/' && nextSymbol == '^' ||
+		inStack == '^' && nextSymbol == '/' || inStack == '^' && nextSymbol == '*' ||
 
-		/*inStack == '*' && nextSymbol == '+'
-		inStack == '*' && nextSymbol == '-'
-		inStack == '/' && nextSymbol == '+'
-		inStack == '/' && nextSymbol == '-'
-		inStack == '^' && nextSymbol == '+'
-		inStack == '^' && nextSymbol == '-'
-
-		inStack == '+' && nextSymbol == '-'
-		inStack == '-' && nextSymbol == '+'
-
-		inStack == '*' && nextSymbol == '/'
-		inStack == '*' && nextSymbol == '^'
-		inStack == '/' && nextSymbol == '*'
-		inStack == '/' && nextSymbol == '^'
-		inStack == '^' && nextSymbol == '/'
-		inStack == '^' && nextSymbol == '*'
-		*/
+		inStack == '*' && nextSymbol == ')' || inStack == '-' && nextSymbol == ')' || // ")" нельзя ложить ни на что кроме "(".
+		inStack == '/' && nextSymbol == ')' || inStack == '+' && nextSymbol == ')' ||
+		inStack == '^' && nextSymbol == ')'
 		)
 	{
 		m_priority = false;
 	}
 	else
 		m_priority = true;
-
-	// ASCII
-	// + 43
-	// - 45
-
-	// * 42
-	// / 47
-	// ^ 94
-
-	// ( 40
-	// ) 41
 }
 
 void Parser::PushOutAndAction()
 {
-	int elemsInNumbers = m_numbersStack.GetCount(); // ТЕСТ
-	string oper = m_symbolStack.Pop(); // оператор в выражении
-	string second_expressionEl = to_string(m_numbersStack.Pop()); // 2 элемент выражения
-	elemsInNumbers = m_numbersStack.GetCount(); // ТЕСТ
-	string first_expressionEl = to_string(m_numbersStack.Pop()); // 1 элемент выражения
-	elemsInNumbers = m_numbersStack.GetCount(); // ТЕСТ
+	const char oper = m_symbolStack.Pop(); // Оператор в выражении.
+	const double second_expressionEl = m_numbersStack.Pop(); // 2 элемент выражения.
+	const double first_expressionEl = m_numbersStack.Pop(); // 1 элемент выражения.
 	double result{ 0 };
-	if (oper == "+")
-		result = atof(first_expressionEl.c_str()) + atof(second_expressionEl.c_str()); // 5+8 не дает 13 !
-	if (oper == "-")
-		result = atof(first_expressionEl.c_str()) - atof(second_expressionEl.c_str());
-	if (oper == "*")
-		result = atof(first_expressionEl.c_str()) * atof(second_expressionEl.c_str());
-	if (oper == "/")
-		result = atof(first_expressionEl.c_str()) / atof(second_expressionEl.c_str());
-	if (oper == "^")
-	{
-		double temp = atof(second_expressionEl.c_str());
-		result = 1;
-		while (temp)
-		{
-			result = result * atof(first_expressionEl.c_str());
-			temp--;
-		}
-		elemsInNumbers = m_numbersStack.GetCount(); // ТЕСТ
-	}
-	//result = atoi(&first_expressionEl) - atoi(&second_expressionEl);
 
-	//int elemsInNumbers = m_numbersStack.GetCount(); 
-	elemsInNumbers = m_numbersStack.GetCount(); // ТЕСТ
-	int elemsInSymbols = m_symbolStack.GetCount(); // ТЕСТ
+	if (oper == '+')
+		result = first_expressionEl + second_expressionEl;
+	else if (oper == '-')
+		result = first_expressionEl - second_expressionEl;
+	else if (oper == '*')
+		result = first_expressionEl * second_expressionEl;
+	else if (oper == '/')
+		result = first_expressionEl / second_expressionEl;
+	else if (oper == '^')
+		result = pow(first_expressionEl, second_expressionEl);
 
-	double top = m_numbersStack.Get();// ТЕСТ
-	string strTop = m_symbolStack.Get();// ТЕСТ
 	m_numbersStack.Push(result);
 }
 
-void Parser::ExpressionTraversal(string str)
+void Parser::ExpressionTraversal(char* str)
 {
-	//Stack<char> m_symbolStack;
-	//m_symbolStack
-	string s;
-	//int len = strlen(str);
-	for (int i = 0; i < str.length(); i++)
+	char s{ '\0' };
+	int len = strlen(str);
+	for (int i = 0; i < len; i++)
 	{
 		switch (str[i])
 		{
 		case '(':
-			m_symbolStack.Push(&str[i]);
+			m_symbolStack.Push(str[i]);
 			break;
 		case ')':
-			s = m_symbolStack.Pop();
-			if (atoi(s.c_str()) == -1)
+			DeterminationOfPriority(str[i]);
+			if (m_priority == true)
 			{
-				cout << "\nПропущена открывающая скобка в позиции ";
-				cout << i;
-				return;
+				m_symbolStack.Push(str[i]);
 			}
-			if (str[i] == ')' && s != "(")
+			else
 			{
-				cout << "\nНекорректная закрывающая скобка в позиции ";
-				cout << i;
-				return;
+				while (m_priority == false) // Пока m_priority выталкиваем выражения и проводим операции
+				{
+					// Выталкивание чисел и обработка выражения, закидка результатата в стек.
+					PushOutAndAction();
+					DeterminationOfPriority(str[i]); // и проверяем можем ли сделать вставку.
+					if (m_priority == true) // При "(" и ")" ничего не ложим в стек,
+						m_symbolStack.Pop(); // а вытягиваем из стека "(".
+				}
 			}
+			break;
 		case '0':
 		case '1':
 		case '2':
@@ -150,80 +91,115 @@ void Parser::ExpressionTraversal(string str)
 		case '7':
 		case '8':
 		case '9':
-			m_numbersStack.Push(str[i]);
+			m_numbersStack.Push(CharToDouble(str, i));
 			break;
 		case '+':
-			DeterminationOfPriority(&str[i]);
+			DeterminationOfPriority(str[i]);
 			if (m_priority == true)
 			{
-				m_symbolStack.Push(&str[i]);
+				m_symbolStack.Push(str[i]);
 			}
 			else
 			{
-				// выталкивание чисел и обработка выражения, закидка результатат в стек.
-				PushOutAndAction();
+				while (m_priority == false) // Пока m_priority выталкиваем выражения и проводим операции
+				{
+					// Выталкивание чисел и обработка выражения, закидка результатата в стек.
+					PushOutAndAction();
+					DeterminationOfPriority(str[i]); // и проверяем можем ли сделать вставку.
+					if (m_priority == true)
+						m_symbolStack.Push(str[i]);
+				}
 			}
 			break;
 		case '-':
-			DeterminationOfPriority(&str[i]);
+			DeterminationOfPriority(str[i]);
 			if (m_priority == true)
 			{
-				m_symbolStack.Push(&str[i]);
+				m_symbolStack.Push(str[i]);
 			}
 			else
 			{
-				while (m_priority == false) // пока m_priority выталкиваем выражения о проводим операции
+				while (m_priority == false) // Пока m_priority выталкиваем выражения и проводим операции
 				{
-					// выталкивание чисел и обработка выражения, закидка результатата в стек.
+					// Выталкивание чисел и обработка выражения, закидка результатата в стек.
 					PushOutAndAction();
-					DeterminationOfPriority(&str[i]); // и проверяем можем ли сделать вставку.
+					DeterminationOfPriority(str[i]); // и проверяем можем ли сделать вставку.
 					if (m_priority == true)
-						m_symbolStack.Push(&str[i]);
+						m_symbolStack.Push(str[i]);
 				}
 			}
 			break;
 		case '*':
-			DeterminationOfPriority(&str[i]);
+			DeterminationOfPriority(str[i]);
 			if (m_priority == true)
 			{
-				m_symbolStack.Push(&str[i]);
+				m_symbolStack.Push(str[i]);
 			}
 			else
 			{
-				// выталкивание чисел и обработка выражения, закидка результатат в стек.
-				PushOutAndAction();
+				while (m_priority == false) // Пока m_priority выталкиваем выражения и проводим операции
+				{
+					// Выталкивание чисел и обработка выражения, закидка результатата в стек.
+					PushOutAndAction();
+					DeterminationOfPriority(str[i]); // и проверяем можем ли сделать вставку.
+					if (m_priority == true)
+						m_symbolStack.Push(str[i]);
+				}
 			}
 			break;
 		case '/':
-			DeterminationOfPriority(&str[i]);
+			DeterminationOfPriority(str[i]);
 			if (m_priority == true)
 			{
-				m_symbolStack.Push(&str[i]);
+				m_symbolStack.Push(str[i]);
 			}
 			else
 			{
-				// выталкивание чисел и обработка выражения, закидка результатат в стек.
-				PushOutAndAction();
+				while (m_priority == false) // Пока m_priority выталкиваем выражения и проводим операции
+				{
+					// Выталкивание чисел и обработка выражения, закидка результатата в стек
+					PushOutAndAction();
+					DeterminationOfPriority(str[i]); // и проверяем можем ли сделать вставку.
+					if (m_priority == true)
+						m_symbolStack.Push(str[i]);
+				}
 			}
 			break;
 		case '^':
-			DeterminationOfPriority(&str[i]);
+			DeterminationOfPriority(str[i]);
 			if (m_priority == true)
 			{
-				m_symbolStack.Push(&str[i]);
+				m_symbolStack.Push(str[i]);
 			}
 			else
 			{
-				// выталкивание чисел и обработка выражения, закидка результатат в стек.
-				PushOutAndAction();
+				while (m_priority == false) // Пока m_priority выталкиваем выражения и проводим операции
+				{
+					// Выталкивание чисел и обработка выражения, закидка результатата в стек
+					PushOutAndAction();
+					DeterminationOfPriority(str[i]); // и проверяем можем ли сделать вставку.
+					if (m_priority == true)
+						m_symbolStack.Push(str[i]);
+				}
 			}
 			break;
 		}
 	}
-	if (!m_symbolStack.IsEmpty())
+	const double finalResult = m_numbersStack.Pop();
+	cout << endl << "Результат выражения: " << finalResult << endl;
+}
+
+double Parser::CharToDouble(char* str, int& position) const
+{
+	char number[20]{ '\0' };
+	strncpy_s(number, 20, str + position, 1);
+	position++;
+	while (str[position] >= '0' && str[position] <= '9' || str[position] == '.')
 	{
-		cout << "\nОтсутствует закрывающая скобка в конце выражения!";
-		return;
+		strncat_s(number, 20, str + position, 1);
+		position++;
 	}
-	cout << "\nСкобки расставлены верно!";
+	double res = atof(number); // результат выходит 5.1100000000000003, возможно нужно обрезать лишнее.
+	position--;
+	return res;
 }

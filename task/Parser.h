@@ -1,21 +1,19 @@
 ﻿#pragma once
-using std::string;
 #include "stack.h"
 
 class Parser
 {
-	//Stack<char> m_stack; // Входящая строка для обработки.
-	Stack<string> m_symbolStack; // Стек для операций и скобок.
+	Stack<char> m_symbolStack; // Стек для операций и скобок.
 	Stack<double> m_numbersStack; // Стек для чисел.
-
-	bool m_priority{ false }; // Отображает можем ли мы ложить в m_symbolStack следующий символ.
-
-	void DeterminationOfPriority(string nextSymbol); // Вычисляет можем ли мы ложить в m_symbolStack следующий символ.
-
-	void PushOutAndAction(); // Выталкиваем 2 числа из m_numbersStack, производим действие и ложим результат в m_numbersStack
-
+	// Отображает можем ли мы ложить в m_symbolStack следующий символ.
+	bool m_priority{ false };
+	// Вычисляет можем ли мы ложить в m_symbolStack следующий символ.
+	void DeterminationOfPriority(char nextSymbol);
+	// Выталкивает 2 числа из m_numbersStack, производит действие и ложит результат в m_numbersStack.
+	void PushOutAndAction();
+	// Преобразует чар в дабл.
+	double CharToDouble(char* str, int& position) const;
 public:
-	void ExpressionTraversal(string str); // Обход выражения.
-
-
+	// Обход выражения.
+	void ExpressionTraversal(char* str);
 };

@@ -39,7 +39,6 @@
 #include <iostream>
 #include <windows.h>
 #include "Parser.h"
-#include <string>
 
 using namespace std;
 
@@ -58,16 +57,17 @@ int main()
 	записанных различными функциями вывода, в изображения, отображаемые в окне консоли.
 	*/
 
-	//char str[200];
-	string str;
+	char str[200];
 	cout << "Введите выражение: ";
-	cin >> str;
+	cin.getline(str, 200);
 
 	Parser parser;
 	parser.ExpressionTraversal(str);
 
 	/*
 	 (5+2^3-(4-(2+3)*2)-1)
+	 // 37 symbols without nullterminator
+	 (5.11+2.22^3.33-(4.44-(2.22+3.33)*2.22)-1.11)
 	*/
 
 	return 0;
